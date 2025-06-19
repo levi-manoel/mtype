@@ -73,10 +73,15 @@ function showMainMenu(): void {
 function runTypingTest(text: string): void {
     console.log(text);
 
+    const startTime = new Date();
     const userTyped = askUser("");
+    const endTime = new Date();
     const result = compareTexts(text, userTyped);
 
+    console.clear();
     console.log(`\naccuracy: ${result.accuracy.toFixed(2)}%`);
+    console.log(`time: ${(endTime.getTime() - startTime.getTime()) / 1000}s`);
+    console.log("---- diff ----");
     console.log(text);
     console.log(result.diffOutput);
 
