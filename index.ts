@@ -2,36 +2,72 @@ import jokes from "./assets/jokes.json";
 import quotes from "./assets/quotes.json";
 import random from "./assets/random.json";
 
-type TypingMode = {
+import { saveTestResult, getTestsResults } from "./src/database";
+
+type MenuOption = {
     name: string;
-    getText: () => string;
+    action: () => void;
 };
 
 const FALLBACK_TEXT = "ai papai";
-const modes: TypingMode[] = [
+const options: MenuOption[] = [
     {
         name: "random typing test",
-        getText: () => getRandomItem(random),
+        action: () => {
+            const text = getRandomItem(random);
+            runTypingTest(text);
+        },
     },
     {
         name: "quote typing test",
-        getText: () => getRandomItem(quotes),
+        action: () => {
+            const text = getRandomItem(quotes);
+            runTypingTest(text);
+        },
     },
     {
         name: "joke typing test",
-        getText: () => getRandomItem(jokes),
+        action: () => {
+            const text = getRandomItem(jokes);
+            runTypingTest(text);
+        },
     },
     {
         name: "custom typing test",
-        getText: () => {
+        action: () => {
             let input = prompt("enter your custom text:");
+
             while (!input || !input.trim()) {
                 console.log("cant be empty");
                 input = prompt("enter your custom text:");
             }
-            return input.trim();
+
+            runTypingTest(input.trim());
         },
     },
+    {
+        name: "list previous tests results",
+        action() {
+            console.clear();
+            const results = getTestsResults();
+
+            if (!results.length) {
+                console.log("no results to show");
+            }
+
+            for (const result of results) {
+                console.log("|-------------------------------------|");
+                console.log(`|   Date (UTC): ${result.date}   |`);
+                console.log(`|   Accuracy: ${result.accuracy}%`.padEnd(37), "|");
+                console.log(`|   Time: ${result.time}s`.padEnd(37), "|");
+                console.log("|-------------------------------------|");
+            }
+
+            prompt("press enter to go back to the menu");
+            console.clear();
+            showMainMenu();
+        }
+    }
 ];
 
 function getRandomItem(arr: string[]): string {
@@ -46,8 +82,8 @@ function askUser(message: string): string {
 }
 
 function showMainMenu(): void {
-    for(const [index, mode] of modes.entries()) {
-        console.log(`${index + 1}. ${mode.name}`);
+    for(const [index, option] of options.entries()) {
+        console.log(`${index + 1}. ${option.name}`);
     }
     console.log("q. quit\n");
 
@@ -59,15 +95,14 @@ function showMainMenu(): void {
     }
 
     const index = Number(choice) - 1;
-    if (Number.isNaN(index) || index < 0 || index >= modes.length) {
-        console.log("\ninvalid option, choose from the menu");
+    if (Number.isNaN(index) || index < 0 || index >= options.length || !options[index]) {
         console.clear();
+        console.log("\ninvalid option, choose from the menu");
         showMainMenu();
         return;
     }
 
-    const textToType = modes[index]?.getText() ?? FALLBACK_TEXT;
-    runTypingTest(textToType);
+    options[index].action();
 }
 
 function runTypingTest(text: string): void {
@@ -84,6 +119,8 @@ function runTypingTest(text: string): void {
     console.log("---- diff ----");
     console.log(text);
     console.log(result.diffOutput);
+    saveTestResult(new Date(), (endTime.getTime() - startTime.getTime()) / 1000, Number(result.accuracy.toFixed(2)));
+    console.log("result saved");
 
     const nextAction = askUser("\ntype 'r' to restart, anything else to quit: ");
     if (nextAction.toLowerCase() === "r") {
