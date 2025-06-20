@@ -1,4 +1,4 @@
-# mtype
+# macacotype[^1]
 
 To install dependencies:
 
@@ -11,4 +11,6 @@ To run:
 ```bash
 bun run index.ts
 ```
+
+[^1]: https://monkeytype.com/
 
