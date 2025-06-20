@@ -95,7 +95,7 @@ function showMainMenu(): void {
 }
 
 function runTypingTest(text: string): void {
-    console.log(text);
+    console.log("", text);
 
     const startTime = new Date();
     const userTyped = askUser("");
