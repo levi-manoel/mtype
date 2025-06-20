@@ -3,13 +3,13 @@ import quotes from "./assets/quotes.json";
 import random from "./assets/random.json";
 
 import { saveTestResult, getTestsResults } from "./src/database";
+import { askUser, compareTexts, getRandomItem } from "./src/utils";
 
 type MenuOption = {
     name: string;
     action: () => void;
 };
 
-const FALLBACK_TEXT = "ai papai";
 const options: MenuOption[] = [
     {
         name: "random typing test",
@@ -70,17 +70,6 @@ const options: MenuOption[] = [
     }
 ];
 
-function getRandomItem(arr: string[]): string {
-    const index = Math.floor(Math.random() * arr.length);
-    return arr[index] ?? FALLBACK_TEXT;
-}
-
-function askUser(message: string): string {
-    const input = prompt(message);
-    if (input === null) process.exit(0);
-    return input.trim();
-}
-
 function showMainMenu(): void {
     for(const [index, option] of options.entries()) {
         console.log(`${index + 1}. ${option.name}`);
@@ -130,35 +119,6 @@ function runTypingTest(text: string): void {
         console.clear();
         process.exit(0);
     } 
-}
-
-type TypingResult = {
-    accuracy: number;
-    diffOutput: string;
-};
-
-function compareTexts(expected: string, typed: string): TypingResult {
-    const expectedChars = expected.split("");
-    const typedChars = typed.split("");
-
-    let matches = 0;
-    let diffParts: string[] = [];
-
-    for (const [index, char] of expectedChars.entries()) {
-        const typedChar = typedChars[index];
-
-        if (typedChar === char) {
-            matches += 1;
-            diffParts.push(char === " " ? " " : `\x1b[32m${typedChar}\x1b[0m`);
-        } else if (typedChar === undefined) {
-            diffParts.push("\x1b[41m \x1b[0m");
-        } else {
-            diffParts.push(typedChar === " " ? `\x1b[41m \x1b[0m` : `\x1b[31m${typedChar}\x1b[0m`);
-        }
-    }
-
-    const accuracy = (matches / expected.length) * 100;
-    return { accuracy, diffOutput: diffParts.join("") };
 }
 
 showMainMenu();
